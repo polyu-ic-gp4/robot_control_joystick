@@ -14,6 +14,9 @@ int in1 = 7;    // L298N control pin for motor 1 direction control
 int in2 = 9;   // L298N control pin for motor 1 PWM input
 int motorSpeed2 = 0;
 
+int sFineTune = 128;
+int tFineTune = 200;
+
 void setup() {
   Serial.begin(9600);
   pinMode(enB, OUTPUT);
@@ -35,12 +38,12 @@ void loop() {
   Serial.println(myJoystickHandle.AnalogRead_X());
   // Controlling the direction of the motor based on the joystick value
   if (joystickValueY > 128) {  // Forward direction
-    digitalWrite(in3, HIGH);
+    digitalWrite(in3,  HIGH);
     digitalWrite(in4, LOW);
-    digitalWrite(in2, HIGH);
+    digitalWrite(in2,  HIGH);
     digitalWrite(in1, LOW);
-    motorSpeed = map(joystickValueY, 128, 255, 0, 255);
-    motorSpeed2 = map(joystickValueY, 128, 255, 0, 255);
+    motorSpeed = map(joystickValueY, 128, 255, 0, 255-sFineTune);
+    motorSpeed2 = map(joystickValueY, 128, 255, 0, 255-sFineTune);
     analogWrite(enB, motorSpeed);
     analogWrite(enA, motorSpeed2);
   } else if (joystickValueY < 128) {  // Reverse direction is removed as motor can't move in reverse direction
@@ -48,8 +51,8 @@ void loop() {
     digitalWrite(in4, HIGH);
     digitalWrite(in2, LOW);
     digitalWrite(in1, HIGH);
-    motorSpeed = map(joystickValueY, 0, 128, 255, 0);
-    motorSpeed2 = map(joystickValueY, 0, 128, 255, 0);
+    motorSpeed = map(joystickValueY, 0, 128, 255-sFineTune, 0);
+    motorSpeed2 = map(joystickValueY, 0, 128, 255-sFineTune, 0);
     analogWrite(enB, motorSpeed);
     analogWrite(enA, motorSpeed2);
 
@@ -66,7 +69,7 @@ void loop() {
   }
  if (joystickValueX < 128) {
 
-    int xMapped = map(joystickValueX, 128, 0, 0, 255);
+    int xMapped = map(joystickValueX, 128, 0, 0, 255-tFineTune);
     
     motorSpeed = motorSpeed - xMapped;
     motorSpeed2 = motorSpeed2 + xMapped;
@@ -82,7 +85,7 @@ void loop() {
   }
   if (joystickValueX > 128) {
    
-    int xMapped = map(joystickValueX, 128, 255, 0, 255);
+    int xMapped = map(joystickValueX, 128, 255, 0, 255-tFineTune);
     
     motorSpeed = motorSpeed + xMapped;
     motorSpeed2 = motorSpeed2 - xMapped;
