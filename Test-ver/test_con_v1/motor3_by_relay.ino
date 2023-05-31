@@ -23,6 +23,9 @@ const int tFineTune = 200;
 unsigned long previousMillis = 0; 
 const long interval = 100; 
 
+bool buttonPressed = false;
+bool relayState = false;
+
 void setupMotor(Motor &motor) {
   pinMode(motor.enablePin, OUTPUT);
   pinMode(motor.directionPin, OUTPUT);
@@ -42,8 +45,6 @@ void updateMotor(Motor &motor, bool direction, int speed) {
   digitalWrite(motor.directionPin, direction);
   analogWrite(motor.enablePin, speed);
 }
-
-
 
 void loop() {
   unsigned long currentMillis = millis();
@@ -83,10 +84,19 @@ void loop() {
     analogWrite(motor1.pwmPin, motor1.speed);
     analogWrite(motor2.pwmPin, motor2.speed);
 
-     if (myJoystickHandle.Get_Button_Status(BUTOON_UP) == PRESS_DOWN) {
-    digitalWrite(RELAY_PIN, HIGH);
-  } else {
-    digitalWrite(RELAY_PIN, LOW);
-  }
+   
+    if (myJoystickHandle.Get_Button_Status(BUTOON_UP) == PRESS_DOWN) {
+      // Check if the button was not previously pressed
+      if (!buttonPressed) {
+       
+        relayState = !relayState;
+        digitalWrite(RELAY_PIN, relayState ? HIGH : LOW);
+      }
+      
+      buttonPressed = true;
+    } else {
+     
+      buttonPressed = false;
+    }
   }
 }
