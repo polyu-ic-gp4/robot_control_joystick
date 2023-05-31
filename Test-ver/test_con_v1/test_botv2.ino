@@ -37,7 +37,7 @@ void updateMotor(Motor &motor, bool direction, int speed) {
   analogWrite(motor.enablePin, speed);
 }
 
-//...原有程式碼
+
 
 void loop() {
   unsigned long currentMillis = millis();
@@ -89,3 +89,4 @@ void loop() {
     }
   }
 }
+
