@@ -1,9 +1,9 @@
 #include "JoystickHandle.h"
 
-// Create joystick instance
+
 JoystickHandle myJoystickHandle(JOYSTICK_I2C_ADDR);
 
-// Motor structure
+
 struct Motor {
   int enPin;
   int dirPin1;
@@ -12,7 +12,7 @@ struct Motor {
 };
 
 
-// Motor connections and initial values
+
 Motor motor1 = {13, 8, 10, 0};
 Motor motor2 = {12, 7, 9, 0};
 Motor motor3 = {48, 49, 11, 0};
@@ -75,5 +75,5 @@ void loop() {
     updateMotor(motor2, LOW, LOW);
   }
   
-  delay(100);  // Delay to allow for joystick to be moved
+  delay(100); 
 }
