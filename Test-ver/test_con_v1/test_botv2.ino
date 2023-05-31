@@ -12,7 +12,7 @@ struct Motor {
 
 Motor motor1 = {13, 8, 10, 0};
 Motor motor2 = {12, 7, 9, 0};
-Motor motor3 = {11, 6, 5, 0}; // Assuming these are the pin assignments for motor3
+Motor motor3 = {11, 6, 5, 0}; 
 
 const int sFineTune = 128;
 const int tFineTune = 200;
@@ -76,7 +76,7 @@ void loop() {
     analogWrite(motor1.pwmPin, motor1.speed);
     analogWrite(motor2.pwmPin, motor2.speed);
 
-    // Handle Motor3 based on Button status
+    
     if (myJoystickHandle.Get_Button_Status(BUTOON_UP) == PRESS_DOWN) {
       updateMotor(motor3, HIGH, 255); // Assuming 255 is full speed
       Serial.println("BUTOON_UP Pressed, Motor3 is spinning");
