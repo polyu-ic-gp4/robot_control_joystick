@@ -57,7 +57,6 @@ void loop() {
     Serial.println(joystickValueY);
     Serial.println(joystickValueX);
 
-    // Handle Motor1 and Motor2
     if (joystickValueY > 128) {
       motor1.speed = motor2.speed = map(joystickValueY, 128, 255, 0, 255-sFineTune);
       updateMotor(motor1, HIGH, motor1.speed);
