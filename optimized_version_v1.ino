@@ -2,70 +2,85 @@
 
 JoystickHandle myJoystickHandle(JOYSTICK_I2C_ADDR);
 
-const int enB = 13, in3 = 8, in4 = 10, enA = 12, in1 = 7, in2 = 9, inr = 26;
-int motorSpeed = 0, motorSpeed2 = 0;
-const int sFineTune = 128, tFineTune = 200;
+int enB = 13;   
+int in3 = 8;    
+int in4 = 10;   
+int motorSpeed = 0;
 
-bool isRelayOn = false;  
-bool isButtonPressedBefore = false;
 
-void setupMotorControlPins() {
-  const int controlPins[] = {enB, in3, in4, enA, in1, in2, inr};
-  for (int pin : controlPins) {
-    pinMode(pin, OUTPUT);
-  }
-}
+int enA = 12;  
+int in1 = 7;    
+int in2 = 9;   
+int motorSpeed2 = 0;
+
+int sFineTune = 128;
+int tFineTune = 200;
+
+int inr = 26;
 
 void setup() {
   Serial.begin(9600);
-  setupMotorControlPins();
+  pinMode(enB, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(inr, OUTPUT);
 }
 
-void controlMotors(int joystickValueY, int joystickValueX) {
-  bool forwardDirection = joystickValueY > 128;
-  digitalWrite(in3, forwardDirection ? HIGH : LOW);
-  digitalWrite(in4, forwardDirection ? LOW : HIGH);
-  digitalWrite(in2, forwardDirection ? HIGH : LOW);
-  digitalWrite(in1, forwardDirection ? LOW : HIGH);
+void setDirection(int pin1, int pin2, int state1, int state2) {
+  digitalWrite(pin1, state1);
+  digitalWrite(pin2, state2);
+}
 
-  int start = forwardDirection ? 128 : 0;
-  int end = forwardDirection ? 255 : 128;
-  motorSpeed = map(joystickValueY, start, end, 0, 255 - sFineTune);
-  motorSpeed2 = map(joystickValueY, start, end, 0, 255 - sFineTune);
+void controlMotorSpeed(int joystickValue, int minVal, int maxVal, int& motorSpeed, int motorPin, int fineTune) {
+  motorSpeed = map(joystickValue, minVal, maxVal, 0, 255-fineTune);
+  motorSpeed = constrain(motorSpeed, 0, 255);
+  analogWrite(motorPin, motorSpeed);
+}
 
-  int xMapped;
-  if (joystickValueX < 128) {
-    xMapped = map(joystickValueX, 128, 0, 0, 255 - tFineTune);
-    motorSpeed -= xMapped;
-    motorSpeed2 += xMapped;
-  } else if (joystickValueX > 128) {
-    xMapped = map(joystickValueX, 128, 255, 0, 255 - tFineTune);
-    motorSpeed += xMapped;
-    motorSpeed2 -= xMapped;
-  }
+void controlTurning(int joystickValue, int minVal, int maxVal, int& motorSpeed, int& motorSpeed2, int pinA, int pinB, int fineTune) {
+  int xMapped = map(joystickValue, minVal, maxVal, 0, 255-fineTune);
+  
+  motorSpeed = motorSpeed + xMapped;
+  motorSpeed2 = motorSpeed2 - xMapped;
 
   motorSpeed = constrain(motorSpeed, 0, 255);
   motorSpeed2 = constrain(motorSpeed2, 0, 255);
+
+  analogWrite(pinA, motorSpeed2);
+  analogWrite(pinB, motorSpeed);
 }
 
 void loop() {
   int joystickValueY = myJoystickHandle.AnalogRead_Y();
   int joystickValueX = myJoystickHandle.AnalogRead_X();
-  
-  Serial.println(joystickValueY);
-  Serial.println(joystickValueX);
 
-  controlMotors(joystickValueY, joystickValueX);
-
-  bool isButtonPressedNow = myJoystickHandle.Get_Button_Status(BUTOON_RIGHT) == PRESS_DOWN;
-  if (isButtonPressedNow && !isButtonPressedBefore) {
-    isRelayOn = !isRelayOn;  
+  if (joystickValueY > 128) {
+    setDirection(in3, in4, HIGH, LOW);
+    setDirection(in2, in1, HIGH, LOW);
+    controlMotorSpeed(joystickValueY, 128, 255, motorSpeed, enB, sFineTune);
+    controlMotorSpeed(joystickValueY, 128, 255, motorSpeed2, enA, sFineTune);
+  } else if (joystickValueY < 128) {
+    setDirection(in3, in4, LOW, HIGH);
+    setDirection(in2, in1, LOW, HIGH);
+    controlMotorSpeed(joystickValueY, 0, 128, motorSpeed, enB, sFineTune);
+    controlMotorSpeed(joystickValueY, 0, 128, motorSpeed2, enA, sFineTune);
+  } else {
+    setDirection(in3, in4, LOW, LOW);
+    setDirection(in1, in2, LOW, LOW);
   }
-  digitalWrite(inr, isRelayOn ? HIGH : LOW);
-  isButtonPressedBefore = isButtonPressedNow;  
 
-  analogWrite(enA, motorSpeed2);
-  analogWrite(enB, motorSpeed);
+  if (joystickValueX < 128) {
+    controlTurning(joystickValueX, 128, 0, motorSpeed, motorSpeed2, enA, enB, tFineTune);
+  }
+  
+  if (joystickValueX > 128) {
+    controlTurning(joystickValueX, 128, 255, motorSpeed, motorSpeed2, enA, enB, tFineTune);
+  }
 
+  digitalWrite(inr, myJoystickHandle.Get_Button_Status(BUTOON_RIGHT) == PRESS_DOWN ? HIGH : LOW);
+  
   delay(100);
 }
