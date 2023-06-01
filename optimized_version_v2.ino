@@ -10,9 +10,9 @@ struct Motor {
 };
 
 Motor motors[3] = {
-  {13, 8, 10, 0}, // Motor 1
-  {12, 7, 9, 0},  // Motor 2
-  {48, 49, 11, 0} // Motor 3
+  {13, 8, 10, 0}, 
+  {12, 7, 9, 0},  
+  {48, 49, 11, 0} 
 };
 
 int sFineTune = 128;
@@ -88,7 +88,6 @@ void loop() {
     buttonLStatus = false;
   }
 
-  // Check motor latch
   if (buttonRLatch) {
     digitalWrite(motors[2].in1, HIGH);
     digitalWrite(motors[2].in2, LOW);
