@@ -2,22 +2,19 @@
 
 JoystickHandle myJoystickHandle(JOYSTICK_I2C_ADDR);
 
-
-int enB = 13;   
-int in3 = 8;    
-int in4 = 10;   
-int motorSpeed = 0;
+const int enB = 13;   
+const int in3 = 8;   
+const int in4 = 10;   
 
 
-int enA = 12;   
-int in1 = 7;    
-int in2 = 9;  
-int motorSpeed2 = 0;
+const int enA = 12;  
+const int in1 = 7;    
+const int in2 = 9;    
 
-int sFineTune = 128;
-int tFineTune = 200;
+const int inr = 26;
 
-int inr = 26;
+int motorSpeed = 0, motorSpeed2 = 0;
+const int sFineTune = 128, tFineTune = 200;
 
 void setup() {
   Serial.begin(9600);
@@ -30,58 +27,48 @@ void setup() {
   pinMode(inr, OUTPUT);
 }
 
-void setDirection(int pin1, int pin2, int state1, int state2) {
-  digitalWrite(pin1, state1);
-  digitalWrite(pin2, state2);
-}
-
-void controlMotorSpeed(int joystickValue, int minVal, int maxVal, int& motorSpeed, int motorPin, int fineTune) {
-  motorSpeed = map(joystickValue, minVal, maxVal, 0, 255-fineTune);
-  motorSpeed = constrain(motorSpeed, 0, 255);
-  analogWrite(motorPin, motorSpeed);
-}
-
-void controlTurning(int joystickValue, int minVal, int maxVal, int& motorSpeed, int& motorSpeed2, int pinA, int pinB, int fineTune) {
-  int xMapped = map(joystickValue, minVal, maxVal, 0, 255-fineTune);
-  
-  motorSpeed = motorSpeed + xMapped;
-  motorSpeed2 = motorSpeed2 - xMapped;
-
-  motorSpeed = constrain(motorSpeed, 0, 255);
-  motorSpeed2 = constrain(motorSpeed2, 0, 255);
-
-  analogWrite(pinA, motorSpeed2);
-  analogWrite(pinB, motorSpeed);
+void adjustMotorSpeeds(int xMapped) {
+  motorSpeed = constrain(motorSpeed - xMapped, 0, 255);
+  motorSpeed2 = constrain(motorSpeed2 + xMapped, 0, 255);
+  analogWrite(enA, motorSpeed2); // Send PWM signal to motor A
+  analogWrite(enB, motorSpeed); // Send PWM signal to motor B
 }
 
 void loop() {
-  int joystickValueY = myJoystickHandle.AnalogRead_Y();
-  int joystickValueX = myJoystickHandle.AnalogRead_X();
+  int joystickValueY = myJoystickHandle.AnalogRead_Y(); // Reading joystick Y value
+  int joystickValueX = myJoystickHandle.AnalogRead_X(); // Reading joystick X value
 
-  if (joystickValueY > 128) {
-    setDirection(in3, in4, HIGH, LOW);
-    setDirection(in2, in1, HIGH, LOW);
-    controlMotorSpeed(joystickValueY, 128, 255, motorSpeed, enB, sFineTune);
-    controlMotorSpeed(joystickValueY, 128, 255, motorSpeed2, enA, sFineTune);
-  } else if (joystickValueY < 128) {
-    setDirection(in3, in4, LOW, HIGH);
-    setDirection(in2, in1, LOW, HIGH);
-    controlMotorSpeed(joystickValueY, 0, 127, motorSpeed, enB, sFineTune);
-    controlMotorSpeed(joystickValueY, 0, 127, motorSpeed2, enA, sFineTune);
-  } else {
-    setDirection(in3, in4, LOW, LOW);
-    setDirection(in1, in2, LOW, LOW);
+  Serial.println(joystickValueY);
+  Serial.println(joystickValueX);
+
+  if (joystickValueY > 128) {  // Forward direction
+    digitalWrite(in3,  HIGH);
+    digitalWrite(in4, LOW);
+    digitalWrite(in2,  HIGH);
+    digitalWrite(in1, LOW);
+    motorSpeed = motorSpeed2 = map(joystickValueY, 128, 255, 0, 255-sFineTune);
+    analogWrite(enB, motorSpeed);
+    analogWrite(enA, motorSpeed2);
+  } else if (joystickValueY < 128) {  // Reverse direction
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in1, HIGH);
+    motorSpeed = motorSpeed2 = map(joystickValueY, 0, 128, 255-sFineTune, 0);
+    analogWrite(enB, motorSpeed);
+    analogWrite(enA, motorSpeed2);
+  } else {  // No motion
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
   }
 
   if (joystickValueX < 128) {
-    controlTurning(joystickValueX, 128, 0, motorSpeed, motorSpeed2, enA, enB, tFineTune);
+    adjustMotorSpeeds(map(joystickValueX, 128, 0, 0, 255-tFineTune));
+  } else if (joystickValueX > 128) {
+    adjustMotorSpeeds(map(joystickValueX, 128, 255, 0, 255-tFineTune));
   }
   
-  if (joystickValueX > 128) {
-    controlTurning(joystickValueX, 128, 255, motorSpeed, motorSpeed2, enA, enB, tFineTune);
-  }
-
   digitalWrite(inr, myJoystickHandle.Get_Button_Status(BUTOON_RIGHT) == PRESS_DOWN ? HIGH : LOW);
-  
-  delay(100);
 }
