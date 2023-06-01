@@ -2,15 +2,16 @@
 
 JoystickHandle myJoystickHandle(JOYSTICK_I2C_ADDR);
 
+
 int enB = 13;   
 int in3 = 8;    
 int in4 = 10;   
 int motorSpeed = 0;
 
 
-int enA = 12;  
+int enA = 12;   
 int in1 = 7;    
-int in2 = 9;   
+int in2 = 9;  
 int motorSpeed2 = 0;
 
 int sFineTune = 128;
@@ -65,8 +66,8 @@ void loop() {
   } else if (joystickValueY < 128) {
     setDirection(in3, in4, LOW, HIGH);
     setDirection(in2, in1, LOW, HIGH);
-    controlMotorSpeed(joystickValueY, 0, 128, motorSpeed, enB, sFineTune);
-    controlMotorSpeed(joystickValueY, 0, 128, motorSpeed2, enA, sFineTune);
+    controlMotorSpeed(joystickValueY, 0, 127, motorSpeed, enB, sFineTune);
+    controlMotorSpeed(joystickValueY, 0, 127, motorSpeed2, enA, sFineTune);
   } else {
     setDirection(in3, in4, LOW, LOW);
     setDirection(in1, in2, LOW, LOW);
