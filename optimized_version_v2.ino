@@ -32,23 +32,30 @@ void setup() {
   }
 }
 
-void motorControl(int joystickValue, Motor &motor, int motorDirection1, int motorDirection2) {
-  digitalWrite(motor.in1, motorDirection1);
-  digitalWrite(motor.in2, motorDirection2);
-  if (joystickValue > 128) {
+void motorControl(int joystickValue, Motor &motor, int motorDirection1, int motorDirection2, int motorDirection3, int motorDirection4) {
+  if (joystickValue > 128) {  // Forward direction
+    digitalWrite(motor.in1, motorDirection1);
+    digitalWrite(motor.in2, motorDirection2);
     motor.speed = map(joystickValue, 128, 255, 0, 255-sFineTune);
-  } else if (joystickValue < 128) {
-    motor.speed = map(joystickValue, 0, 128, 255-sFineTune, 0);
+  } else if (joystickValue < 128) {  // Reverse direction
+    digitalWrite(motor.in1, motorDirection3);
+    digitalWrite(motor.in2, motorDirection4);
+    motor.speed = map(joystickValue, 0, 127, 255-sFineTune, 0);
+  } else {  // Stop
+    digitalWrite(motor.in1, LOW);
+    digitalWrite(motor.in2, LOW);
+    motor.speed = 0;
   }
   analogWrite(motor.en, motor.speed);
 }
+
 
 void loop() {
   int joystickValueY = myJoystickHandle.AnalogRead_Y();
   int joystickValueX = myJoystickHandle.AnalogRead_X();
 
-  motorControl(joystickValueY, motors[0], HIGH, LOW);
-  motorControl(joystickValueY, motors[1], LOW, HIGH);
+  motorControl(joystickValueY, motors[0], HIGH, LOW, LOW, HIGH);
+  motorControl(joystickValueY, motors[1], LOW, HIGH, HIGH, LOW);
   if (joystickValueY == 128) {
     digitalWrite(motors[0].in1, LOW);
     digitalWrite(motors[0].in2, LOW);
