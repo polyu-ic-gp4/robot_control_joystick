@@ -14,8 +14,10 @@ int in1 = 7;    // L298N control pin for motor 1 direction control
 int in2 = 9;   // L298N control pin for motor 1 PWM input
 int motorSpeed2 = 0;
 
-int sFineTune = 128;
-int tFineTune = 200;
+int sLimiter = 128;
+int tLimiter = 200;
+int rLimiter = 30;
+int lLimiter = 0;
 
 // Motor 3
 int rm = 48;
@@ -55,8 +57,8 @@ void loop() {
     digitalWrite(in4, LOW);
     digitalWrite(in2,  HIGH);
     digitalWrite(in1, LOW);
-    motorSpeed = map(joystickValueY, 128, 255, 0, 255-sFineTune);
-    motorSpeed2 = map(joystickValueY, 128, 255, 0, 255-sFineTune);
+    motorSpeed = map(joystickValueY, 128, 255, 0, 255-sLimiter-lLimiter);
+    motorSpeed2 = map(joystickValueY, 128, 255, 0, 255-sLimiter-rLimiter);
     analogWrite(enB, motorSpeed);
     analogWrite(enA, motorSpeed2);
   } else if (joystickValueY < 128) {  // Reverse direction is removed as motor can't move in reverse direction
@@ -64,8 +66,8 @@ void loop() {
     digitalWrite(in4, HIGH);
     digitalWrite(in2, LOW);
     digitalWrite(in1, HIGH);
-    motorSpeed = map(joystickValueY, 0, 128, 255-sFineTune, 0);
-    motorSpeed2 = map(joystickValueY, 0, 128, 255-sFineTune, 0);
+    motorSpeed = map(joystickValueY, 0, 128, 255-sLimiter-lLimiter, 0);
+    motorSpeed2 = map(joystickValueY, 0, 128, 255-sLimiter-rLimiter, 0);
     analogWrite(enB, motorSpeed);
     analogWrite(enA, motorSpeed2);
 
@@ -76,7 +78,7 @@ void loop() {
     digitalWrite(in2, LOW);
   }
  if (joystickValueX < 128) {
-    int xMapped = map(joystickValueX, 128, 0, 0, 255-tFineTune);
+    int xMapped = map(joystickValueX, 128, 0, 0, 255-tLimiter);
     
     motorSpeed = motorSpeed - xMapped;
     motorSpeed2 = motorSpeed2 + xMapped;
@@ -92,7 +94,7 @@ void loop() {
   }
   if (joystickValueX > 128) {
    
-    int xMapped = map(joystickValueX, 128, 255, 0, 255-tFineTune);
+    int xMapped = map(joystickValueX, 128, 255, 0, 255-tLimiter);
     
     motorSpeed = motorSpeed + xMapped;
     motorSpeed2 = motorSpeed2 - xMapped;
@@ -139,5 +141,4 @@ void loop() {
   
   delay(100);  // Delay to allow for joystick to be moved
 }
-
 
